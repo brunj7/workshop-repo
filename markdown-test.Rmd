@@ -1,0 +1,40 @@
+---
+title: "rmarkdown-test"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Header One
+
+Here is some explanation. **Bold text here**
+
+Here is another para
+
+* apple
+* banana
+* kiwi
+
+$\sum{x^2}$
+
+```{r name_1}
+# Comment
+x <- c(1, 12, -5)
+x
+```
+
+Here is an hidden chunk
+```{r echo=FALSE}
+y <- x + 4
+print(y)
+```
+
+function_name(param1 = value1, param2 = value2, ...)
+
+```{r}
+bg_chem <- read.csv(file="data/BGchem2008data.csv")
+```
+
