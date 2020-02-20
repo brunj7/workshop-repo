@@ -70,7 +70,7 @@ mean_region <- catch_long %>%
   summarise(catch_mean = mean(catch),
             nums_obs = n())
 
-head(mean_region)
+glimpse(mean_region)
 ```
 
 
