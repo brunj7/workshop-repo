@@ -1,0 +1,86 @@
+---
+title: "Data Cleaning"
+author: "Julien Brun"
+date: "2/19/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(tidyr)
+```
+
+# Read in data
+
+We are using data from [Mike Byerly. Alaska commercial salmon catches by management region (1886- 1997). Gulf of Alaska Data Portal](https://knb.ecoinformatics.org/#view/df35b.304.2)
+
+```{r}
+catch_original <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1", method = "libcurl"),
+                           stringsAsFactors = FALSE)
+head(catch_original)
+```
+
+
+
+# Clean and reshape
+
+Remove the marginal sum and the notes column `select()`
+
+```{r}
+
+catch_clean <- catch_original %>%
+  # select(Region, Year, Chinook, Sockeye, Pink, Chum)
+  select(-All, -notesRegCode) %>%
+  mutate(Chinook = ifelse(Chinook == "I", 1, Chinook)) %>%
+  mutate(Chinook = as.numeric(Chinook))
+  
+
+head(catch_clean)
+```
+
+## QA
+
+Find where `as_numeric` could not convert Chinook
+
+```{r}
+i <- which(is.na(catch_clean$Chinook))
+
+catch_original[i,]
+```
+
+## Reashape from wide to tall format using `pivot_longer`
+
+```{r}
+catch_long <- catch_clean %>%
+  pivot_longer(cols = -c(Region, Year),
+               names_to = "Species",
+               values_to = "Catch")
+head(catch_long)
+
+```
+
+```{r}
+mean_region <- catch_long %>% 
+  mutate(catch = Catch*1000) %>%
+  group_by(Region) %>%
+  summarise(catch_mean = mean(catch),
+            nums_obs = n())
+
+head(mean_region)
+```
+
+
+# Join to regions table
+
+
+
+
+
+
+
+
+
