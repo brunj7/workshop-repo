@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE, include=FALSE}
 library(leaflet)
 library(dplyr)
 library(tidyr)
@@ -26,15 +26,7 @@ data_url <- "https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3Af11
 
 esc <- tryCatch(
     read.csv("data/escapement.csv", stringsAsFactors = FALSE),
-    error=function(
-```
-
-
-
-
-
-```{r}
-) {
+    error=function(cond) {
         message(paste("Escapement file does not seem to exist, so get it from the KNB."))
         esc <- read.csv(url(data_url, method = "libcurl"), stringsAsFactors = FALSE)
         return(esc)
@@ -43,6 +35,8 @@ esc <- tryCatch(
 
 head(esc)
 ```
+
+
 
 # Data Processing
 
@@ -74,5 +68,64 @@ Changin the color of the bars:
 ```{r}
 ggplot(annual_esc, aes(x = Species, y = escapement )) +
   geom_col(fill = "blue")
+```
+Per region:
+
+```{r}
+ggplot(annual_esc, aes( x = Species, y = escapement, fill = SASAP.Region)) +
+  geom_col()
+```
+### Looking into the Kodiak region
+
+
+```{r}
+annual_esc %>%
+  filter(SASAP.Region == "Kodiak") %>%
+  ggplot(aes(x = Year, y = escapement, color = Species)) +
+     geom_line() +
+     geom_point() +
+     ggtitle("Salmon Annual Escpament for the Kodiak Region") +
+     ylab("Escapment") +   
+     theme_bw() + 
+     theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom")
+  
+```
+```{r}
+my_theme <- theme_bw() + 
+     theme(plot.title = element_text(hjust = 0.5), 
+           legend.position = "bottom",
+           legend.title = element_blank())
+
+annual_esc %>%
+  filter(SASAP.Region == "Kodiak") %>%
+  ggplot(aes(x = Year, y = escapement, color = Species)) +
+     geom_line() +
+     geom_point() +
+     ggtitle("Salmon Annual Escpament for the Kodiak Region") +
+     ylab("Escapment") +
+     my_theme
+
+```
+
+## Playing with Facet
+
+```{r}
+ggplot(annual_esc, aes(x = Year, y = escapement, color = Species)) + 
+    geom_line() +
+    geom_point() +
+    scale_y_continuous(labels = comma) +
+    facet_wrap(~SASAP.Region, scales = "free_y", ncol = 2) +
+    ylab("Escapement") +
+    my_theme
+```
+
+```{r}
+p1 <- ggplot(annual_esc, aes(x = Species, y = escapement)) +
+  geom_col()
+
+p2 <- ggplot(annual_esc, aes(x = Species, y = escapement)) +
+  geom_col(fill="blue")
+
+p1 + p2
 ```
 
