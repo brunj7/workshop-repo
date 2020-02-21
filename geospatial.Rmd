@@ -18,9 +18,85 @@ library(scales)
 
 # read data
 ```{r}
-ak_region <- read_sf("data/ak_regions_simp.shp")
+ak_regions <- read_sf("data/ak_regions_simp.shp")
 
 head(ak_region)
 ```
 
+```{r}
+ak_regions_3338 <- ak_regions %>%
+  st_transform((crs = 3338))
+
+plot(ak_regions_3338)
+```
+# Saptial joins ans summrariess
+
+```{r}
+# Red data
+pop <- read.csv("data/alaska_population.csv", stringsAsFactors = FALSE)
+
+head(pop)
+
+```
+
+Making a spatial objects
+```{r}
+pop_4326 <- st_as_sf(pop,
+                     coords = c("lng", "lat"),
+                     crs = 4326,
+                     remove = F)
+
+pop_3338 <- pop_4326 %>%
+  st_transform(crs = 3338)
+head(pop_3338)
+```
+
+```{r}
+pop_joined <- st_join(pop_3338, ak_regions_3338, join = st_within)
+
+plot(pop_joined)
+```
+## Calculate pop by region
+
+```{r}
+pop_region <- pop_joined %>%
+  as.data.frame() %>% 
+  group_by(region) %>%
+  summarise(total = sum(population))
+
+head(pop_region)
+```
+```{r}
+pop_region_3338 <- left_join(ak_regions_3338, pop_region, by = "region")
+
+plot(pop_region_3338)
+```
+```{r}
+pop_mgmt_3338 <- pop_region_3338 %>%
+  group_by(mgmt_area) %>%
+  summarise(total_pop = sum(total))
+
+plot(pop_mgmt_3338["total_pop"])
+```
+```{r}
+write_sf(pop_region_3338, "data/ak_regions_pop.shp", delete_layer = TRUE)
+```
+
+## Make maps
+
+```{r}
+rivers_3338 <- read_sf("data/ak_rivers_simp.shp")
+```
+
+
+```{r}
+ggplot() +
+  geom_sf(data = pop_region_3338, aes(fill = total)) + 
+  geom_sf(data = rivers_3338, aes(size = StrOrder), color = "blue") + 
+  geom_sf(data = pop_3338, aes(), size = 0.5) +
+  scale_size(range = c(0.01, 0.2), guide = FALSE) +
+  theme_bw() + 
+  labs(fill = "Total population") + 
+  scale_fill_continuous(low = "khaki", high = "firebrick", labels = comma)
+```
 
