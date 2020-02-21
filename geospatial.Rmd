@@ -1,0 +1,26 @@
+---
+title: "Geospatial Analysis"
+author: "Julien Brun"
+date: "2/21/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(sf)
+library(dplyr)
+library(ggplot2)
+library(scales)
+```
+
+# read data
+```{r}
+ak_region <- read_sf("data/ak_regions_simp.shp")
+
+head(ak_region)
+```
+
+
